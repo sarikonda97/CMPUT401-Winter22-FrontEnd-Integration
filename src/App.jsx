@@ -21,6 +21,7 @@ import { DeleteRESTCaller } from './helpers';
 class App extends Component {
   state = {
     items: [],
+    id: 0,
     title: "",
     desc: "",
     checked: false
@@ -63,9 +64,9 @@ class App extends Component {
         "description": this.state.desc,
         "completed": this.state.checked
       };
-      await RESTCaller(addUrl, headers, data);
-      const items = [...this.state.items, {title: this.state.title, description: this.state.desc, completed: this.state.checked}];
-      this.setState({ items: items, title: "" , desc: ""});
+      const addResponse = await RESTCaller(addUrl, headers, data);
+      const items = [...this.state.items, {title: this.state.title, description: this.state.desc, completed: this.state.checked, id: addResponse.id}];
+      this.setState({ items: items, title: "" , desc: "", checked: false, id: 0});
     }
   }
   handleDelete = async (id) => {
@@ -73,14 +74,13 @@ class App extends Component {
     const Olditems = [...this.state.items]
     console.log("Olditems", Olditems);
     const items = Olditems.filter((element, i) => {
-      return i !== id
+      return element.id !== id
     })
     console.log("Newitems", items);
     this.setState({ items: items });
 
-    const deleteUrl = `https://401-todo-api.azurewebsites.net/api/todo/${id+1}/?format=api`;
+    const deleteUrl = `https://401-todo-api.azurewebsites.net/api/todo/${id}/?format=api`;
     await DeleteRESTCaller(deleteUrl);
-
   }
   render() {
     return (
@@ -114,7 +114,7 @@ class App extends Component {
                 <ul className="list-unstyled row m-5">
                   {
                     this.state.items.map((value, i) => {
-                      return <Plan key={i} id={i} value={value} sendData={this.handleDelete} />
+                      return <Plan key={i} id={value.id} value={value} sendData={this.handleDelete} />
                     })
                   }
                 </ul>
